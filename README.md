@@ -6,16 +6,11 @@ This project demonstrates how to use Amazon Transcribe to transcribe the audio s
 
 ```
 amazon-transcribe-streaming-demo/
-├── python/                  # Python implementation
-│   ├── transcribe_streaming.py     # Real-time streaming transcription
-│   ├── transcribe_file.py          # Batch transcription of audio file
-│   ├── audio_stream_validator.py   # Validates audio stream functionality
-│   ├── run.sh                      # Script to run the streaming demo
-│   └── requirements.txt            # Python dependencies
 ├── transcribe_streaming.py  # Real-time streaming transcription
 ├── transcribe_file.py       # Batch transcription of audio file
 ├── audio_stream_validator.py # Validates audio stream functionality
 ├── run.sh                   # Script to run the streaming demo
+├── requirements.txt         # Python dependencies
 └── test_audio.wav           # Sample audio file for testing
 ```
 
