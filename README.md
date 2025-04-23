@@ -1,6 +1,6 @@
 # Amazon Transcribe Real-time Streaming Demo
 
-This project demonstrates how to use Amazon Transcribe to transcribe the audio stream from France Info radio in real-time, implemented in both Python and Java.
+This project demonstrates how to use Amazon Transcribe to transcribe the audio stream from France Info radio in real-time.
 
 ## Project Structure
 
@@ -12,10 +12,10 @@ amazon-transcribe-streaming-demo/
 │   ├── audio_stream_validator.py   # Validates audio stream functionality
 │   ├── run.sh                      # Script to run the streaming demo
 │   └── requirements.txt            # Python dependencies
-├── java/                    # Java implementation
-│   ├── src/                     # Java source code
-│   ├── pom.xml                  # Maven project configuration
-│   └── run.sh                   # Script to build and run the Java demo
+├── transcribe_streaming.py  # Real-time streaming transcription
+├── transcribe_file.py       # Batch transcription of audio file
+├── audio_stream_validator.py # Validates audio stream functionality
+├── run.sh                   # Script to run the streaming demo
 └── test_audio.wav           # Sample audio file for testing
 ```
 
@@ -23,16 +23,12 @@ amazon-transcribe-streaming-demo/
 
 - AWS account with access to Amazon Transcribe
 - ffmpeg installed on your system
-- For Python: Python 3.8+
-- For Java: Java 11+ and Maven
+- Python 3.8+
 
-## Python Implementation
-
-### Installation
+## Installation
 
 1. Create and activate a Python virtual environment:
    ```
-   cd python
    python3 -m venv venv
    source venv/bin/activate
    ```
@@ -45,67 +41,25 @@ amazon-transcribe-streaming-demo/
    aws configure
    ```
 
-### Usage
+## Usage
 
-#### Audio Stream Validation
+### Audio Stream Validation
 To verify that downloading and converting the audio stream works correctly:
 ```
 python audio_stream_validator.py
 ```
 
-#### Batch Transcription
+### Batch Transcription
 To transcribe an audio sample with Amazon Transcribe in batch mode:
 ```
 python transcribe_file.py
 ```
 Results will be saved in `transcription_result.json`.
 
-#### Real-time Transcription (streaming)
+### Real-time Transcription (streaming)
 To start real-time transcription:
 ```
 python transcribe_streaming.py
-```
-or
-```
-./run.sh
-```
-
-To stop the transcription, press Ctrl+C.
-
-## Java Implementation
-
-### Installation
-
-1. Build the project with Maven:
-   ```
-   cd java
-   mvn clean package assembly:single
-   ```
-
-2. Configure your AWS credentials:
-   ```
-   aws configure
-   ```
-
-### Usage
-
-#### Audio Stream Validation
-To verify that downloading and converting the audio stream works correctly:
-```
-java -cp target/amazon-transcribe-streaming-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.example.transcribe.AudioStreamValidator
-```
-
-#### Batch Transcription
-To transcribe an audio sample with Amazon Transcribe in batch mode:
-```
-java -cp target/amazon-transcribe-streaming-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.example.transcribe.TranscribeFile
-```
-Results will be saved in `transcription_result.json`.
-
-#### Real-time Transcription (streaming)
-To start real-time transcription:
-```
-java -cp target/amazon-transcribe-streaming-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.example.transcribe.TranscribeStreaming
 ```
 or
 ```
