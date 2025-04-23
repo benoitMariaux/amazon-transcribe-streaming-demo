@@ -1,0 +1,7 @@
+boto3>=1.38.0
+requests>=2.32.3
+pydub>=0.25.1
+ffmpeg-python>=0.2.0
+amazon-transcribe>=0.6.2
+websocket-client>=1.8.0
+ffmpeg>=1.4

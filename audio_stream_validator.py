@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Local test to verify that downloading and converting the audio stream works correctly
+Validates that downloading and converting the audio stream works correctly
+before attempting to use Amazon Transcribe
 """
 
 import subprocess
@@ -16,7 +17,7 @@ DURATION = 10  # Recording duration in seconds
 
 def test_stream_download():
     """Tests downloading and converting the audio stream"""
-    print(f"Testing stream download: {STREAM_URL}")
+    print(f"Validating stream download: {STREAM_URL}")
     print(f"Recording {DURATION} seconds...")
     
     try:
@@ -55,7 +56,7 @@ def test_stream_download():
 
 def test_stream_to_pcm():
     """Tests converting the stream to PCM for Transcribe"""
-    print(f"Testing stream conversion to PCM...")
+    print(f"Validating stream conversion to PCM...")
     
     try:
         # Create a temporary file to store a PCM sample
@@ -114,13 +115,13 @@ def test_stream_to_pcm():
         return False
 
 if __name__ == "__main__":
-    print("=== Testing audio stream download ===")
+    print("=== Validating audio stream download ===")
     success1 = test_stream_download()
     
-    print("\n=== Testing conversion to PCM for Transcribe ===")
+    print("\n=== Validating conversion to PCM for Transcribe ===")
     success2 = test_stream_to_pcm()
     
     if success1 and success2:
-        print("\n✅ All tests passed! The audio stream can be used with Transcribe.")
+        print("\n✅ All validations passed! The audio stream can be used with Transcribe.")
     else:
-        print("\n❌ Some tests failed. Check the errors above.")
+        print("\n❌ Some validations failed. Check the errors above.")

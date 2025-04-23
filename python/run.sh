@@ -2,18 +2,8 @@
 
 # Script to run real-time transcription
 
-# Create and activate virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv venv
-fi
-
 # Activate virtual environment
 source venv/bin/activate
-
-# Install dependencies
-echo "Installing dependencies..."
-pip install -r requirements.txt
 
 # Check if ffmpeg is installed
 if ! command -v ffmpeg &> /dev/null; then
@@ -30,5 +20,4 @@ if ! aws sts get-caller-identity &> /dev/null; then
 fi
 
 # Run the transcription script
-echo "Starting transcription..."
 python3 transcribe_streaming.py
