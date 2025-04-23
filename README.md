@@ -10,8 +10,7 @@ amazon-transcribe-streaming-demo/
 ├── transcribe_file.py       # Batch transcription of audio file
 ├── audio_stream_validator.py # Validates audio stream functionality
 ├── run.sh                   # Script to run the streaming demo
-├── requirements.txt         # Python dependencies
-└── test_audio.wav           # Sample audio file for testing
+└── requirements.txt         # Python dependencies
 ```
 
 ## Prerequisites
