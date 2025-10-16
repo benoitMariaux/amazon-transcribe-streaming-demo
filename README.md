@@ -1,6 +1,6 @@
 # Amazon Transcribe Real-time Streaming Demo
 
-This project demonstrates how to use Amazon Transcribe to transcribe the audio stream from France Info radio in real-time.
+This project demonstrates how to use Amazon Transcribe to transcribe the audio stream from France Info radio in real-time, directly in your terminal.
 
 ## Project Structure
 
