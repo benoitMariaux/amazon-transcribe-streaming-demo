@@ -18,7 +18,7 @@ from amazon_transcribe.model import TranscriptEvent
 STREAM_URL = "http://icecast.radiofrance.fr/franceinfo-lofi.aac"
 LANGUAGE_CODE = "fr-FR"  # French
 SAMPLE_RATE = 16000  # 16 kHz
-REGION = "eu-west-1"  # Change according to your AWS region
+REGION = "us-east-1"  # Change according to your AWS region
 
 # Queue to store audio segments for transcription
 audio_queue = queue.Queue(maxsize=100)  # Limit queue size
@@ -31,6 +31,7 @@ class TranscriptHandler(TranscriptResultStreamHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.results = []
+        self.last_partial = ""
         
     async def handle_transcript_event(self, transcript_event: TranscriptEvent):
         """Processes each transcription event"""
@@ -38,20 +39,25 @@ class TranscriptHandler(TranscriptResultStreamHandler):
         
         for result in results:
             for alt in result.alternatives:
-                transcript = alt.transcript
+                transcript = alt.transcript.strip()
                 
-                # Display result with timestamp
-                timestamp = datetime.now().strftime("%H:%M:%S")
                 if result.is_partial:
-                    print(f"[{timestamp}] [PARTIAL] {transcript}")
+                    # Effacer la ligne précédente et afficher le nouveau texte partiel
+                    if transcript != self.last_partial:
+                        print(f"\r{transcript}", end="", flush=True)
+                        self.last_partial = transcript
                 else:
-                    print(f"[{timestamp}] [FINAL] {transcript}")
-                    
-                    # Store the final result
-                    self.results.append({
-                        "timestamp": timestamp,
-                        "transcript": transcript
-                    })
+                    # Texte final : effacer la ligne et afficher proprement
+                    if transcript:
+                        timestamp = datetime.now().strftime("%H:%M:%S")
+                        print(f"\r[{timestamp}] {transcript}")
+                        
+                        # Store the final result
+                        self.results.append({
+                            "timestamp": timestamp,
+                            "transcript": transcript
+                        })
+                        self.last_partial = ""
 
 def download_and_convert_stream():
     """Downloads the audio stream and converts it to a format compatible with Transcribe"""

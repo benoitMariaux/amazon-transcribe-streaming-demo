@@ -12,7 +12,7 @@ import uuid
 
 # Configuration
 LANGUAGE_CODE = "fr-FR"  # French
-REGION = "eu-west-1"  # Change according to your AWS region
+REGION = "us-east-1"  # Change according to your AWS region
 INPUT_FILE = "test_audio.wav"  # File created by audio_stream_validator.py
 OUTPUT_FILE = "transcription_result.json"
 

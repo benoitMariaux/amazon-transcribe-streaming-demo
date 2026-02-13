@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -34,7 +33,6 @@ env/
 
 # Transcription results
 transcription_result.json
-*.json
 
 # IDE
 .idea/
@@ -44,16 +42,17 @@ transcription_result.json
 
 # OS specific
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# AWS
-.aws-sam/
-samconfig.toml
+# AWS CDK
+cdk.out/
+infra/cdk.out/
+
+# Build artifacts
+source.zip
 
 # Logs
 *.log
+
+# Pytest
+.pytest_cache/

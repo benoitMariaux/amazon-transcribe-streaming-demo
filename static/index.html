@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>France Info — Transcription en direct</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d27;
+            --bg-tertiary: #242836;
+            --text-primary: #e4e6ed;
+            --text-secondary: #9ca0ad;
+            --text-muted: #6b7084;
+            --accent: #5b8def;
+            --accent-dim: #3d6bc7;
+            --green: #4caf7d;
+            --red: #e05555;
+            --orange: #e0a055;
+            --border: #2d3143;
+            --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        #status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 0.3rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 100px;
+            white-space: nowrap;
+        }
+
+        #status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red);
+            flex-shrink: 0;
+            transition: background 0.3s ease;
+        }
+
+        #status-dot.connected {
+            background: var(--green);
+            box-shadow: 0 0 6px rgba(76, 175, 125, 0.5);
+        }
+
+        #status-dot.reconnecting {
+            background: var(--orange);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Audio player */
+        .audio-section {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .audio-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        #play-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.2rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        #play-btn:hover {
+            background: var(--accent-dim);
+        }
+
+        #play-btn .icon {
+            font-size: 1rem;
+        }
+
+        audio {
+            display: none;
+        }
+
+        #audio-error {
+            display: none;
+            color: var(--red);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(224, 85, 85, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(224, 85, 85, 0.2);
+        }
+
+        /* Transcription zone */
+        .transcription-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding-top: 1rem;
+        }
+
+        .transcription-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .transcription-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        #scroll-notice {
+            display: none;
+            font-size: 0.7rem;
+            color: var(--accent);
+            cursor: pointer;
+            padding: 0.2rem 0.6rem;
+            background: rgba(91, 141, 239, 0.1);
+            border-radius: 100px;
+            border: 1px solid rgba(91, 141, 239, 0.2);
+            transition: background 0.2s;
+        }
+
+        #scroll-notice:hover {
+            background: rgba(91, 141, 239, 0.2);
+        }
+
+        #transcription-zone {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        #transcription-zone::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #transcription-zone::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #transcription-zone::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #transcription-zone::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .line {
+            margin-bottom: 0.5rem;
+            padding: 0.35rem 0;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(45, 49, 67, 0.5);
+        }
+
+        .line:last-child {
+            border-bottom: none;
+        }
+
+        .line .timestamp {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-right: 0.75rem;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .line.partial {
+            color: var(--text-secondary);
+            font-style: italic;
+            border-bottom: none;
+        }
+
+        .line.partial .text::after {
+            content: '▍';
+            animation: blink 1s step-end infinite;
+            color: var(--accent);
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            #app {
+                padding: 0 1rem;
+            }
+            h1 {
+                font-size: 1rem;
+            }
+            .line {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>France Info — Transcription en direct</h1>
+            <div id="status-indicator">
+                <span id="status-dot"></span>
+                <span id="status-text">Déconnecté</span>
+            </div>
+        </header>
+
+        <div class="audio-section">
+            <div class="audio-label">Flux audio en direct</div>
+            <button id="play-btn" aria-label="Lancer le flux audio">
+                <span class="icon">▶</span> <span id="play-label">Écouter</span>
+            </button>
+            <audio id="player" preload="none"
+                   src="https://icecast.radiofrance.fr/franceinfo-lofi.aac"></audio>
+            <div id="audio-error">Le flux audio est actuellement inaccessible.</div>
+        </div>
+
+        <div class="transcription-section">
+            <div class="transcription-header">
+                <div class="transcription-label">Transcription</div>
+                <div id="scroll-notice" role="button" tabindex="0">↓ Nouvelles lignes</div>
+            </div>
+            <div id="transcription-zone" role="log" aria-live="polite" aria-label="Zone de transcription en direct">
+                <div class="empty-state" id="empty-state">
+                    En attente de la transcription…
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // --- DOM refs ---
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const transcriptionZone = document.getElementById('transcription-zone');
+        const emptyState = document.getElementById('empty-state');
+        const scrollNotice = document.getElementById('scroll-notice');
+        const audioPlayer = document.getElementById('player');
+        const audioError = document.getElementById('audio-error');
+
+        // --- State ---
+        let ws = null;
+        let reconnectTimer = null;
+        let lastPartialText = '';
+        let currentLine = null;       // The <div> for the current partial line
+        let autoScroll = true;
+
+        // --- Audio play/pause button ---
+        var playBtn = document.getElementById('play-btn');
+        var playLabel = document.getElementById('play-label');
+        var playing = false;
+
+        playBtn.addEventListener('click', function () {
+            if (playing) {
+                audioPlayer.pause();
+                playBtn.querySelector('.icon').textContent = '▶';
+                playLabel.textContent = 'Écouter';
+                playing = false;
+            } else {
+                audioPlayer.play().then(function () {
+                    playBtn.querySelector('.icon').textContent = '⏸';
+                    playLabel.textContent = 'Pause';
+                    playing = true;
+                }).catch(function () {
+                    audioError.style.display = 'block';
+                });
+            }
+        });
+
+        audioPlayer.addEventListener('error', function () {
+            audioError.style.display = 'block';
+            playBtn.querySelector('.icon').textContent = '▶';
+            playLabel.textContent = 'Écouter';
+            playing = false;
+        });
+        audioPlayer.addEventListener('playing', function () {
+            audioError.style.display = 'none';
+        });
+
+        // --- Status indicator ---
+        function setStatus(status, message) {
+            statusDot.className = '';
+            if (status === 'connected' || status === 'transcribing') {
+                statusDot.classList.add('connected');
+                statusText.textContent = message || 'Connecté';
+            } else if (status === 'reconnecting') {
+                statusDot.classList.add('reconnecting');
+                statusText.textContent = message || 'Reconnexion…';
+            } else {
+                // disconnected / error
+                statusText.textContent = message || 'Déconnecté';
+            }
+        }
+
+        // --- Auto-scroll logic ---
+        function isNearBottom() {
+            var threshold = 60;
+            return (transcriptionZone.scrollHeight - transcriptionZone.scrollTop - transcriptionZone.clientHeight) < threshold;
+        }
+
+        transcriptionZone.addEventListener('scroll', function () {
+            if (isNearBottom()) {
+                autoScroll = true;
+                scrollNotice.style.display = 'none';
+            } else {
+                autoScroll = false;
+                scrollNotice.style.display = 'inline-block';
+            }
+        });
+
+        scrollNotice.addEventListener('click', function () {
+            autoScroll = true;
+            scrollNotice.style.display = 'none';
+            transcriptionZone.scrollTop = transcriptionZone.scrollHeight;
+        });
+
+        scrollNotice.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                scrollNotice.click();
+            }
+        });
+
+        function scrollToBottom() {
+            if (autoScroll) {
+                transcriptionZone.scrollTop = transcriptionZone.scrollHeight;
+            }
+        }
+
+        // --- Transcription rendering ---
+        function hideEmptyState() {
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        function ensureCurrentLine() {
+            if (!currentLine) {
+                currentLine = document.createElement('div');
+                currentLine.className = 'line partial';
+                var textSpan = document.createElement('span');
+                textSpan.className = 'text';
+                currentLine.appendChild(textSpan);
+                transcriptionZone.appendChild(currentLine);
+            }
+            return currentLine;
+        }
+
+        function getCurrentLineText() {
+            var line = ensureCurrentLine();
+            return line.querySelector('.text').textContent;
+        }
+
+        function setCurrentLineText(text) {
+            var line = ensureCurrentLine();
+            line.querySelector('.text').textContent = text;
+        }
+
+        function formatTimestamp(isoString) {
+            try {
+                var d = new Date(isoString);
+                var hh = String(d.getHours()).padStart(2, '0');
+                var mm = String(d.getMinutes()).padStart(2, '0');
+                var ss = String(d.getSeconds()).padStart(2, '0');
+                return hh + ':' + mm + ':' + ss;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function handlePartial(text) {
+            hideEmptyState();
+            ensureCurrentLine();
+
+            if (lastPartialText && text.startsWith(lastPartialText)) {
+                // Extension: append only the new suffix
+                var suffix = text.slice(lastPartialText.length);
+                var textSpan = currentLine.querySelector('.text');
+                textSpan.textContent = textSpan.textContent + suffix;
+            } else {
+                // Correction by Transcribe: replace the entire line
+                setCurrentLineText(text);
+            }
+
+            lastPartialText = text;
+            scrollToBottom();
+        }
+
+        function handleFinal(text, timestamp) {
+            hideEmptyState();
+            ensureCurrentLine();
+
+            // Calculate diff with last partial and append remaining suffix
+            var currentText = getCurrentLineText();
+            if (text.startsWith(currentText)) {
+                var suffix = text.slice(currentText.length);
+                var textSpan = currentLine.querySelector('.text');
+                textSpan.textContent = textSpan.textContent + suffix;
+            } else {
+                setCurrentLineText(text);
+            }
+
+            // Freeze the line: remove partial styling, add timestamp
+            currentLine.className = 'line';
+
+            var tsSpan = document.createElement('span');
+            tsSpan.className = 'timestamp';
+            tsSpan.textContent = formatTimestamp(timestamp);
+            currentLine.insertBefore(tsSpan, currentLine.firstChild);
+
+            // Reset for next line
+            currentLine = null;
+            lastPartialText = '';
+            scrollToBottom();
+        }
+
+        function handleStatus(status, message) {
+            setStatus(status, message);
+        }
+
+        // --- WebSocket ---
+        function connectWebSocket() {
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                return;
+            }
+
+            var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            var wsUrl = protocol + '//' + window.location.host + '/ws';
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                setStatus('connected', 'Connecté');
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+            };
+
+            ws.onmessage = function (event) {
+                var msg;
+                try {
+                    msg = JSON.parse(event.data);
+                } catch (e) {
+                    return; // Ignore invalid JSON silently
+                }
+
+                if (!msg.type) {
+                    return; // Ignore messages without type field
+                }
+
+                if (msg.type === 'partial') {
+                    handlePartial(msg.text || '');
+                } else if (msg.type === 'final') {
+                    handleFinal(msg.text || '', msg.timestamp || '');
+                } else if (msg.type === 'status') {
+                    handleStatus(msg.status || '', msg.message || '');
+                }
+            };
+
+            ws.onclose = function () {
+                setStatus('disconnected', 'Déconnecté');
+                scheduleReconnect();
+            };
+
+            ws.onerror = function () {
+                // onclose will fire after onerror, so reconnect is handled there
+            };
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimer) return;
+            setStatus('reconnecting', 'Reconnexion…');
+            reconnectTimer = setTimeout(function () {
+                reconnectTimer = null;
+                connectWebSocket();
+            }, 3000);
+        }
+
+        // --- Init ---
+        connectWebSocket();
+    })();
+    </script>
+</body>
+</html>
